@@ -14,7 +14,7 @@ export default function Profile() {
 
       <button
         onClick={() => navigate("/dashboard")}
-        style={{ marginTop: 20, padding: 10 }}
+        style={{ marginTop: 30, padding: 15 }}
       >
         Back to Dashboard
       </button>
