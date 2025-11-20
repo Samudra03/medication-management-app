@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import medicationsData from "../data/medication";
 import { useNavigate } from "react-router-dom";
+import medicationsData from "../data/medications";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -8,150 +8,117 @@ export default function Dashboard() {
   const [medications, setMedications] = useState([]);
   const [username, setUsername] = useState("");
 
+  // Load User + Medicines
   useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser) return;
 
-    const storedUser = localStorage.getItem("username");
-    if (storedUser) setUsername(storedUser);
+    setUsername(storedUser.name);
 
-    const saved = JSON.parse(localStorage.getItem("medications"));
-    if (saved) {
-      setMedications(saved);
-    } else {
-      setMedications(medicationsData);
-    }
+    // Safely match user's medicine IDs
+    const userMeds = medicationsData.filter(
+      (med) =>
+        Array.isArray(storedUser.medicineIds) &&
+        storedUser.medicineIds.includes(med.id)
+    );
+
+    setMedications(userMeds);
   }, []);
 
+  // Logout
   const logout = () => {
-    localStorage.removeItem("username");
-    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/");
   };
 
+  // Mark medicine taken
   const markAsTaken = (id) => {
-    const updated = medications.map((med) =>
+    const updatedList = medications.map((med) =>
       med.id === id ? { ...med, taken: !med.taken } : med
     );
 
-    setMedications(updated);
-    localStorage.setItem("medications", JSON.stringify(updated));
+    setMedications(updatedList);
+    localStorage.setItem("medications", JSON.stringify(updatedList));
   };
 
   return (
     <div>
-
-      <nav className="navbar navbar-expand-lg bg-primary navbar-dark">
+      {/* NAVBAR */}
+      <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
         <div className="container-fluid">
-          <a
+          <span
             className="navbar-brand"
             style={{ cursor: "pointer" }}
             onClick={() => navigate("/dashboard")}
           >
             MedTrack
-          </a>
+          </span>
 
           <button
             className="navbar-toggler"
             type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
+            data-bs-target="#menu"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          <div
-            className="collapse navbar-collapse justify-content-between"
-            id="navbarNav"
-          >
+          <div id="menu" className="collapse navbar-collapse justify-content-between">
             <ul className="navbar-nav">
               <li className="nav-item">
-                <span
-                  className="nav-link"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate("/dashboard")}
-                >
+                <span className="nav-link" style={{ cursor: "pointer" }} onClick={() => navigate("/dashboard")}>
                   Dashboard
                 </span>
               </li>
 
               <li className="nav-item">
-                <span
-                  className="nav-link"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate("/profile")}
-                >
+                <span className="nav-link" style={{ cursor: "pointer" }} onClick={() => navigate("/profile")}>
                   Profile
-                  
                 </span>
               </li>
             </ul>
 
-            <div
-              className="d-flex align-items-center"
-              style={{ gap: "15px" }}
-            >
-              <span className="text-white fw-semibold">
-                Hello, {user.name}
-              </span>
-
-              <button className="btn btn-danger btn-sm" onClick={logout}>
-                Logout
-              </button>
+            <div className="d-flex align-items-center gap-3">
+              <span className="text-white fw-semibold">Hello, {username}</span>
+              <button className="btn btn-danger btn-sm" onClick={logout}>Logout</button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* DASHBOARD */}
-      <div style={{ width: "90%", margin: "30px auto" }}>
-        <h2>Medication Dashboard</h2>
 
-        <div style={styles.grid}>
+      <div className="container mt-4">
+        <h2 className="mb-4">Medication Dashboard</h2>
+
+        <div className="row">
           {medications.map((m) => (
-            <div key={m.id} style={styles.card}>
-              <h3
-                onClick={() =>
-                  navigate(`/medicine/${m.id}`, { state: m })
-                }
-                style={{ cursor: "pointer" }}
-              >
-                {m.name}
-              </h3>
-              <p>{m.dosage}</p>
+            <div className="col-md-4 col-sm-6 mb-4" key={m.id}>
+              <div className="card p-3 shadow-sm">
+                <h4
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate(`/medicine/${m.id}`, { state: m })}
+                >
+                  {m.name}
+                </h4>
 
-              <button
-                style={{
-                  ...styles.takeBtn,
-                  background: m.taken ? "green" : "#1976d2",
-                }}
-                onClick={() => markAsTaken(m.id)}
-              >
-                {m.taken ? "Taken ✔" : "Mark as Taken"}
-              </button>
+                <p className="text-muted mb-2">{m.dosage}</p>
+
+                <button
+                  className="btn w-100"
+                  style={{ background: m.taken ? "green" : "#1976d2", color: "white" }}
+                  onClick={() => markAsTaken(m.id)}
+                >
+                  {m.taken ? "Taken ✔" : "Mark as Taken"}
+                </button>
+              </div>
             </div>
           ))}
         </div>
+
+        {medications.length === 0 && (
+          <p className="text-muted mt-3">No medicines assigned to you.</p>
+        )}
       </div>
     </div>
   );
 }
-
-const styles = {
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-    gap: "20px",
-  },
-  card: {
-    padding: 20,
-    border: "1px solid #ddd",
-    borderRadius: 10,
-  },
-  takeBtn: {
-    padding: 8,
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    cursor: "pointer",
-    marginTop: 10,
-  },
-};
