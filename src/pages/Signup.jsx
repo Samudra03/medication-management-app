@@ -4,116 +4,78 @@ import { useNavigate } from "react-router-dom";
 export default function Signup() {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
-  const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [medicineInput, setMedicineInput] = useState("");
 
   const handleSignup = () => {
-    if (!form.name || !form.email || !form.password) {
-      setError("All fields are required!");
+    if (!username || !email || !password) {
+      alert("All fields are required!");
       return;
     }
 
-    // Save user
-    localStorage.setItem("user", JSON.stringify(form));
-    alert("Signup successful! Please login.");
+    const medicineIds = medicineInput
+      .split(",")
+      .map((id) => parseInt(id.trim()))
+      .filter((id) => !isNaN(id));
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+
+    const newUser = {
+      name: username,
+      email,
+      password,
+      medicineIds,
+    };
+
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("Registration successful! Please login.");
     navigate("/");
   };
 
   return (
-    <div style={styles.container}>
+    <div className="container mt-4">
       <h2>Create Account</h2>
 
       <input
         type="text"
-        name="name"
-        placeholder="Full Name"
-        value={form.name}
-        onChange={handleChange}
-        style={styles.input}
+        className="form-control mt-3"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
       />
 
       <input
         type="email"
-        name="email"
+        className="form-control mt-3"
         placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-        style={styles.input}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
       />
 
-      <div style={{ position: "relative" }}>
-        <input
-          type={showPass ? "text" : "password"}
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          style={styles.input}
-        />
-        <span
-          style={styles.eye}
-          onClick={() => setShowPass(!showPass)}
-        >
-          {showPass ? "🙈" : "👁️"}
-        </span>
-      </div>
+      <input
+        type="password"
+        className="form-control mt-3"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <input
+        type="text"
+        className="form-control mt-3"
+        inputMode="text"
+        placeholder="Enter Medicine IDs (ex: 1, 3, 5)"
+        value={medicineInput}
+        onChange={(e) => setMedicineInput(e.target.value)}
+      />
 
-      <button style={styles.btn} onClick={handleSignup}>
-        Signup
+      <button className="btn btn-primary mt-4" onClick={handleSignup}>
+        Register
       </button>
-
-      <p>
-        Already have an account?{" "}
-        <span style={styles.link} onClick={() => navigate("/")}>
-          Login
-        </span>
-      </p>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    width: 350,
-    margin: "50px auto",
-    padding: 20,
-    border: "1px solid #ddd",
-    borderRadius: 10,
-    textAlign: "center",
-  },
-  input: {
-    width: "90%",
-    padding: 10,
-    marginTop: 10,
-    borderRadius: 8,
-    border: "1px solid gray",
-  },
-  btn: {
-    marginTop: 20,
-    padding: "10px 20px",
-    width: "100%",
-    background: "#1976d2",
-    color: "#fff",
-    border: "none",
-    borderRadius: 8,
-    cursor: "pointer",
-  },
-  link: { color: "blue", cursor: "pointer" },
-  eye: {
-    position: "absolute",
-    right: 15,
-    top: 20,
-    cursor: "pointer",
-  },
-};

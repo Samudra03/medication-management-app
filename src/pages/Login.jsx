@@ -6,28 +6,23 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState("");
 
   const handleLogin = () => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
 
-    if (!email || !password) {
-      setError("All fields are required.");
+    const allUsers = JSON.parse(localStorage.getItem("users")) || [];
+
+    const foundUser = allUsers.find(
+      (user) => user.email === email && user.password === password
+    );
+
+    if (!foundUser) {
+      alert("Invalid email or password");
       return;
     }
 
-    if (!storedUser) {
-      setError("No user found. Please signup first.");
-      return;
-    }
+    localStorage.setItem("user", JSON.stringify(foundUser));
 
-    if (storedUser.email === email && storedUser.password === password) {
-      localStorage.setItem("loggedIn", "true");
-      navigate("/dashboard");
-    } else {
-      setError("Invalid email or password.");
-    }
+    navigate("/dashboard");
   };
 
   return (
@@ -36,38 +31,28 @@ export default function Login() {
 
       <input
         type="email"
-        placeholder="Email"
+        placeholder="Enter your email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         style={styles.input}
       />
 
-      <div style={{ position: "relative" }}>
-        <input
-          type={showPass ? "text" : "password"}
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-        />
-        <span
-          style={styles.eye}
-          onClick={() => setShowPass(!showPass)}
-        >
-          {showPass ? "🙈" : ""}
-        </span>
-      </div>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <input
+        type="password"
+        placeholder="Enter your password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={styles.input}
+      />
 
       <button style={styles.btn} onClick={handleLogin}>
         Login
       </button>
 
       <p>
-        New user?{" "}
+        Don’t have an account?{" "}
         <span style={styles.link} onClick={() => navigate("/signup")}>
-          Create Account
+          Sign Up
         </span>
       </p>
     </div>
@@ -76,35 +61,34 @@ export default function Login() {
 
 const styles = {
   container: {
-    width: 350,
-    margin: "50px auto",
-    padding: 20,
-    border: "1px solid #ddd",
-    borderRadius: 10,
+    width: "350px",
+    margin: "60px auto",
+    padding: "20px",
+    borderRadius: "10px",
+    background: "#f7faff",
     textAlign: "center",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
   },
   input: {
-    width: "90%",
-    padding: 10,
-    marginTop: 10,
-    borderRadius: 8,
-    border: "1px solid gray",
+    width: "100%",
+    padding: "10px",
+    margin: "10px 0",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
   },
   btn: {
-    marginTop: 20,
-    padding: "10px 20px",
     width: "100%",
+    padding: "12px",
+    marginTop: "15px",
     background: "#1976d2",
     color: "#fff",
     border: "none",
-    borderRadius: 8,
+    borderRadius: "6px",
     cursor: "pointer",
   },
-  link: { color: "blue", cursor: "pointer" },
-  eye: {
-    position: "absolute",
-    right: 15,
-    top: 20,
+  link: {
+    color: "#1976d2",
     cursor: "pointer",
+    fontWeight: "bold",
   },
 };
